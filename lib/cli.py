@@ -1,60 +1,87 @@
-from db.models import Event, session, Guest, Expense
+# cli.py
+import sys
+import os
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-def display_menu():
-    print("1. Create Event")
-    print("2. View All Events")
-    print("3. Add Guest to Event")
-    print("4. Add Expense to Event")
-    print("5. Exit")
+from lib.db.database import session, init_db
+from lib.db.models import Event, Guest, Expense
+from lib.helper import print_menu, get_user_choice, get_event_details, get_guest_details, get_expense_details, display_event, display_guest, display_expense
 
-def create_event():
-    name = input("Enter event name: ")
-    location = input("Enter event location: ")
-    event = Event(name=name, location=location)
-    session.add(event)
-    session.commit()
-    print(f"Event '{name}' created.")
+def main():
+    init_db()  # Initialize the database
 
-def view_all_events():
-    events = session.query(Event).all()
-    for event in events:
-        print(f"ID: {event.id}, Name: {event.name}, Location: {event.location}")
-
-def add_guest_to_event():
-    event_id = int(input("Enter event ID: "))
-    name = input("Enter guest name: ")
-    guest = Guest(name=name, event_id=event_id)
-    session.add(guest)
-    session.commit()
-    print(f"Guest '{name}' added to event ID {event_id}.")
-
-def add_expense_to_event():
-    event_id = int(input("Enter event ID: "))
-    description = input("Enter expense description: ")
-    amount = float(input("Enter expense amount: "))
-    expense = Expense(description=description, amount=amount, event_id=event_id)
-    session.add(expense)
-    session.commit()
-    print(f"Expense '{description}' of {amount} added to event ID {event_id}.")
-
-def run():
     while True:
-        display_menu()
-        choice = input("Choose an option: ")
+        print_menu()
+        choice = get_user_choice()
 
-        if choice == '1':
-            create_event()
-        elif choice == '2':
-            view_all_events()
-        elif choice == '3':
-            add_guest_to_event()
-        elif choice == '4':
-            add_expense_to_event()
-        elif choice == '5':
+        if choice == 1:
+            # Create Event
+            event_data = get_event_details()
+            if event_data:
+                new_event = Event(**event_data)
+                session.add(new_event)
+                session.commit()
+                print(f"Event '{new_event.name}' created successfully!")
+        
+        elif choice == 2:
+            # View All Events
+            events = session.query(Event).all()
+            for event in events:
+                display_event(event)
+        
+        elif choice == 3:
+            # Find Event by ID
+            event_id = input("Enter event ID: ")
+            event = session.query(Event).get(event_id)
+            if event:
+                display_event(event)
+            else:
+                print("Event not found.")
+        
+        elif choice == 4:
+            # Delete Event
+            event_id = input("Enter event ID to delete: ")
+            event = session.query(Event).get(event_id)
+            if event:
+                session.delete(event)
+                session.commit()
+                print(f"Event '{event.name}' deleted successfully!")
+            else:
+                print("Event not found.")
+        
+        elif choice == 5:
+            # Manage Guest List
+            event_id = input("Enter event ID to manage guests: ")
+            event = session.query(Event).get(event_id)
+            if event:
+                guest_data = get_guest_details()
+                if guest_data:
+                    new_guest = Guest(**guest_data, event=event)
+                    session.add(new_guest)
+                    session.commit()
+                    print(f"Guest '{new_guest.name}' added to event '{event.name}'!")
+            else:
+                print("Event not found.")
+        
+        elif choice == 6:
+            # Track Expenses
+            event_id = input("Enter event ID to track expenses: ")
+            event = session.query(Event).get(event_id)
+            if event:
+                expense_data = get_expense_details()
+                if expense_data:
+                    new_expense = Expense(**expense_data, event=event)
+                    session.add(new_expense)
+                    session.commit()
+                    print(f"Expense '{new_expense.name}' added to event '{event.name}'!")
+            else:
+                print("Event not found.")
+        
+        elif choice == 7:
+            # Exit
+            print("Exiting the Event Planning CLI. Goodbye!")
             break
-        else:
-            print("Invalid option. Please try again.")
 
 if __name__ == "__main__":
-    run()
+    main()

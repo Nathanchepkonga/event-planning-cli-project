@@ -1,0 +1,2 @@
+2024-09-22 23:54:00,391 - event_planning_debugger - INFO - Event: Wedding Reception | Info: Successfully created event with ID: 101
+2024-09-22 23:54:00,391 - event_planning_debugger - ERROR - Error: Failed to delete event with ID: 102 - Event not found

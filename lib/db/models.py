@@ -1,41 +1,47 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
-
-Base = declarative_base()
+# db/models.py
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
+from .database import Base
+import datetime
 
 class Event(Base):
     __tablename__ = 'events'
-    
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    location = Column(String)
-    
-    guests = relationship('Guest', back_populates='event')
-    expenses = relationship('Expense', back_populates='event')
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    location = Column(String, nullable=False)
+    description = Column(String)
+    date = Column(DateTime, default=datetime.datetime.utcnow)
+
+    guests = relationship("Guest", back_populates="event", cascade="all, delete-orphan")
+    expenses = relationship("Expense", back_populates="event", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Event(name={self.name}, date={self.date})>"
 
 class Guest(Base):
     __tablename__ = 'guests'
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    phone = Column(String, nullable=False)
     event_id = Column(Integer, ForeignKey('events.id'))
-    
-    event = relationship('Event', back_populates='guests')
+
+    event = relationship("Event", back_populates="guests")
+
+    def __repr__(self):
+        return f"<Guest(name={self.name}, email={self.email})>"
 
 class Expense(Base):
     __tablename__ = 'expenses'
 
-    id = Column(Integer, primary_key=True)
-    description = Column(String)
-    amount = Column(Float)
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    amount = Column(Float, nullable=False)
     event_id = Column(Integer, ForeignKey('events.id'))
-    
-    event = relationship('Event', back_populates='expenses')
 
-# Setup the SQLite database connection
-engine = create_engine('sqlite:///event_planning.db')
-Base.metadata.create_all(engine)
+    event = relationship("Event", back_populates="expenses")
 
-Session = sessionmaker(bind=engine)
-session = Session()
+    def __repr__(self):
+        return f"<Expense(name={self.name}, amount={self.amount})>"
