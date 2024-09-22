@@ -13,7 +13,7 @@ The **Event Planning CLI** helps users to plan and manage events, guest lists, a
 
 1. Clone this repository:
     ```bash
-    git clone https://github.com/your-username/event-planning-cli.git
+    git clone https://github.com/Nathanchepkonga/event-planning-cli-project.git
     cd event-planning-cli
     ```
 
@@ -57,5 +57,4 @@ The **Event Planning CLI** helps users to plan and manage events, guest lists, a
 - `amount`: Float
 - `event_id`: Foreign Key (Event ID)
 
-## Running Tests
 
